@@ -1,0 +1,6 @@
+%output 'robots.txt'
+User-agent: *
+Disallow:
+
+SITEMAP: {{ config/site_url 'sitemap.txt' pathjoin }}
+%end
