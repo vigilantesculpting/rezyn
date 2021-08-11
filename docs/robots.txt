@@ -1,0 +1,3 @@
+User-agent: *
+Disallow:
+SITEMAP: https://vigilantesculpting.github.io/rezyn/sitemap.txt

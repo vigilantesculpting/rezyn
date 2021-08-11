@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"
+	xmlns="http://backend.userland.com/rss2"
+	xmlns:tags="https://vigilantesculpting.github.io/tagsModule/">
+<channel>
+<title>rezyn feed</title>
+<link>https://vigilantesculpting.github.io/rezyn/</link>
+<description><div class="filecontent"><h2>+++ <a href="https://github.com/vigilantesculpting/rezyn">https://github.com/vigilantesculpting/rezyn</a> +++</h2></div></description>
+<item>
+	<title>-=[rezyn]=-</title>
+	<link>https://vigilantesculpting.github.io/rezyn/blog/2021-08-03-post3.html</link>
+	<description>
+		<![CDATA[
+		<p>
+		Rezyn is a static website generator in Python It uses a database of plain text files to store content, and renders the content to HTML&nbsp;<a href="https://vigilantesculpting.github.io/rezyn/blog/2021-08-03-post3.html">[...Read More]</a>
+		</p>
+	]]>
+	</description>
+	<tags:taglist>
+		<tags:tag>hello</tags:tag>
+		<tags:tag>world</tags:tag>
+	</tags:taglist>
+	<pubDate>Tue, 03 Aug 2021 14:47:42 -0700</pubDate>
+</item>
+<item>
+	<title>Morbi non erat eros</title>
+	<link>https://vigilantesculpting.github.io/rezyn/blog/2021-08-03-post2.html</link>
+	<description>
+		<![CDATA[
+		<p>
+		Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi&nbsp;<a href="https://vigilantesculpting.github.io/rezyn/blog/2021-08-03-post2.html">[...Read More]</a>
+		</p>
+	]]>
+	</description>
+	<tags:taglist>
+		<tags:tag>hello</tags:tag>
+		<tags:tag>world</tags:tag>
+	</tags:taglist>
+	<pubDate>Tue, 03 Aug 2021 14:47:23 -0700</pubDate>
+</item>
+<item>
+	<title>Lorem ipsum dolor sit amet</title>
+	<link>https://vigilantesculpting.github.io/rezyn/blog/2021-08-03-post1.html</link>
+	<description>
+		<![CDATA[
+		<p>
+		At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati&nbsp;<a href="https://vigilantesculpting.github.io/rezyn/blog/2021-08-03-post1.html">[...Read More]</a>
+		</p>
+	]]>
+	</description>
+	<tags:taglist>
+		<tags:tag>hello</tags:tag>
+		<tags:tag>world</tags:tag>
+	</tags:taglist>
+	<pubDate>Tue, 03 Aug 2021 14:46:38 -0700</pubDate>
+</item>
+</channel>
+</rss>
