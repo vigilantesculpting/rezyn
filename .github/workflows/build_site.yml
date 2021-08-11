@@ -36,6 +36,7 @@ jobs:
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Build site
         run: |
+          git checkout buildcheck
           ./rezyn.py -c rezynsite/config.yml 
           git config user.name "GitHub Actions Bot"
           git config user.email "<>"
@@ -43,4 +44,4 @@ jobs:
           mv _http/rezyn docs
           git add docs
           git commit -m "github actions: build site"
-          #git push origin master
+          git push origin buildcheck
