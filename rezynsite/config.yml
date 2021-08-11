@@ -1,6 +1,7 @@
 config/timezone         : America/Los_Angeles
 config/title            : 'rezyn'
-config/site_url         : 'https://vigilantesculpting.github.io/rezyn'
+config/site_url         : 'https://vigilantesculpting.github.io'
+config/tgtsubdir        : 'rezyn'
 config/staticdir        : 'static'
 config/contentdir       : 'content'
 config/templatedir      : 'template'

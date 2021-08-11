@@ -1,6 +1,6 @@
 
 %func item: path post
-	%set 'postlink': config/site_url path post/slug '.html' + //+
+	%set 'postlink': config/site_url config/tgtsubdir path post/slug '.html' + //+
 <item>
 	<title>{{ post/title }}</title>
 	<link>{{ postlink }}</link>
@@ -10,9 +10,8 @@
 		%if post/thumbnail exists
 			<a class="more" href="{{ postlink }}">{{ post/thumbnail }}</a>
 		%end
-		{{ post/content truncate }}&nbsp;<a href="{{ postlink }}">...</a>
+		{{ post/content truncate }}&nbsp;<a href="{{ postlink }}">[...Read More]</a>
 		</p>
-		<p><a href="{{ postlink }}">Read More</a></p>
 	]]>
 	</description>
 	<tags:taglist>
@@ -32,7 +31,7 @@
 	xmlns:tags="https://vigilantesculpting.github.io/tagsModule/">
 <channel>
 <title>{{ title }}</title>
-<link>{{ config/site_url rsspath //+ }}</link>
+<link>{{ config/site_url config/tgtsubdir rsspath //+ }}</link>
 <description>{{ description }}</description>
 %for post: posts
 	%call item: postpath post

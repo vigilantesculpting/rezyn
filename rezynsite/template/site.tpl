@@ -26,7 +26,6 @@
 %end
 
 %func postnavigation: postid posts name
-%-	%if posts || 0 >
 	%if posts || 0 ==
 		%exit
 	%end
@@ -56,7 +55,6 @@
 		%end
 		</div>
 		</section>
-%-	%end
 %end
 
 %func postpage: postid post
@@ -86,7 +84,6 @@
 %end
 
 %func paginatenavigation: pageid pagecount basename
-%-	%if pagecount 0 >
 	%if pagecount 0 ==
 		%exit
 	%end
@@ -118,7 +115,6 @@
 		%end
 		</div>
 		</section>
-%-	%end
 %end
 
 %- used for blog/index[].html, articles/index[].html, projects/index[].html and sketches/index[].html
@@ -146,7 +142,7 @@
 %call makeindex: 'generated with rezyn' '' content/sortedposts 'blog' content/blog.html/content
 
 %output 'about.html'
-	%wrap page: 'About reZyn' '' ''
+	%wrap page: 'About rezyn' '' ''
 	{{ content/about.html/content }}
 	%end
 %end

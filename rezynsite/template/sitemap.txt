@@ -1,7 +1,7 @@
 %output 'sitemap.txt'
 	%for key: output
 		%if key '.html' endswith
-{{ config/site_url key pathjoin }}
+{{ config/site_url config/tgtsubdir key //+ }}
 		%end
 	%end
 %end

@@ -242,7 +242,7 @@ class Rezyn:
 		self.solon.context['config/now'] = datetime.datetime.now(tz)
 		self.solon.context['config/current_year'] = self.solon.context['config/now'].year
 
-		targetdir = self.solon.context.config.tgtdir
+		targetdir = os.path.join(self.solon.context.config.tgtdir, self.solon.context.config.tgtsubdir)
 		staticdir = os.path.join(self.solon.context.config.srcdir, self.solon.context.config.staticdir)
 		log("setup sourcedir [%s] -> targetdir [%s]" % (staticdir, targetdir))
 
@@ -293,7 +293,7 @@ class Rezyn:
 		self.solon.rendertemplate("template/robots.txt")
 
 		for filename, content in self.solon.context.output.dict().iteritems():
-			path = os.path.join(self.solon.context['config/tgtdir'], filename)
+			path = os.path.join(self.solon.context['config/tgtdir'], self.solon.context['config/tgtsubdir'], filename)
 			log("writing [%s]..." % path)
 			writefile(path, content)
 
@@ -331,12 +331,13 @@ def processargs(argv):
 	configname = 'config.yml'
 	tgtdir = "_http"
 	dbg_site_url = 'http://localhost:8000'
+	tgtsubdir = None
 	publish_all = False
 	debug = False
 	srcdir = None
 
 	try:
-		optlist, args = getopt.gnu_getopt(argv[1:], 's:dc:t:ph', ['sourcedir=', 'debug', 'config=', 'targetdir=', 'publish-all', 'help'])
+		optlist, args = getopt.gnu_getopt(argv[1:], 's:dc:T:t:ph', ['sourcedir=', 'debug', 'config=', 'targetdir=', 'targetsubdir=', 'publish-all', 'help'])
 	except getopt.GetoptError as err:
 		usage(-2, argv[0], err)
 	for opt, arg in optlist:
@@ -344,8 +345,10 @@ def processargs(argv):
 			configname = arg
 		elif opt in ('-s', '--sourcedir'):
 			srcdir = arg
-		elif opt in ('-t', '--targetdir'):
+		elif opt in ('-T', '--targetdir'):
 			tgtdir = arg
+		elif opt in ('-t', '--targetsubdir'):
+			tgtsubdir = arg
 		elif opt in ('-p', '--publish-all'):
 			publish_all = True
 		elif opt in ('-h', '--help'):
@@ -369,6 +372,9 @@ def processargs(argv):
 		'publish_all'					: publish_all,
 		'debug'							: debug,
 	})
+
+	if tgtsubdir:
+		config['config/tgtsubdir'] = tgtsubdir
 
 	if debug:
 		config['config/site_url'] = dbg_site_url

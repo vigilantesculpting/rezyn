@@ -5,21 +5,21 @@
     <title>{{ title }} - {{ subtitle }}</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width">
-    <link href="{{ base_path 'favicon.ico' pathjoin }}" rel="icon" type="image/x-icon">
-    <link rel="stylesheet" type="text/css" href="{{ base_path 'css' ('structure-'    csskeys/structure   '.css' sum) //+ }}">
-    <link rel="stylesheet" type="text/css" href="{{ base_path 'css' ('style-'        csskeys/style       '.css' sum) //+ }}">
-    <link rel="alternate"  type="application/rss+xml" href="{{ base_path             'rss.xml' //+  }}" title="rezyn feed">
+    <link href="{{ '/' config/tgtsubdir 'favicon.ico' //+ }}" rel="icon" type="image/x-icon">
+    <link rel="stylesheet" type="text/css" href="{{ '/' config/tgtsubdir 'css' ('structure-' csskeys/structure '.css' sum) //+ }}">
+    <link rel="stylesheet" type="text/css" href="{{ '/' config/tgtsubdir 'css' ('style-'     csskeys/style     '.css' sum) //+ }}">
+    <link rel="alternate"  type="application/rss+xml" href="{{ '/' config/tgtsubdir     'rss.xml' //+ }}" title="rezyn feed">
 </head>
 <body><script>0</script>
 <main>
 <nav>
 <section class="titlesection">
-    <a href="{{ base_path }}/"><div class="titleimage"><img id="titleimage" src="{{ base_path 'images' 'title.png' //+ }}" /></div></a>
+    <a href="{{ '/' config/tgtsubdir //+ }}"><div class="titleimage"><img id="titleimage" src="{{ '/' config/tgtsubdir 'images' 'title.png' //+ }}" /></div></a>
     <div class="sitenavigation">
     <span class="home">
-        <a href="{{ base_path '/'               //+ }}">Home</a>
-        <a href="{{ base_path 'contact.html'    //+ }}">Contact</a>
-        <a href="{{ base_path 'about.html'      //+ }}">About</a>
+        <a href="{{ '/' config/tgtsubdir                   //+ }}">Home</a>
+        <a href="{{ '/' config/tgtsubdir 'contact.html'    //+ }}">Contact</a>
+        <a href="{{ '/' config/tgtsubdir 'about.html'      //+ }}">About</a>
     </span>
     </div>
 </section>
