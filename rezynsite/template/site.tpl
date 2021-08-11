@@ -120,7 +120,7 @@
 %- used for blog/index[].html, articles/index[].html, projects/index[].html and sketches/index[].html
 %func makeindex: title targetdir posts postsdir description
 	%set 'postgroups': posts config/paginatecount groupby
-	%set 'pagecount': posts length config/paginatecount /
+	%set 'pagecount': posts length config/paginatecount / ceil int
 	%for pageid postgroup: postgroups enumerate
 		%output targetdir ( 'index' ( pageid str '' pageid 0 > ? ) '.html' sum ) //+
 			%wrap page: config/title title '..'

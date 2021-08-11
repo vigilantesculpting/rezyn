@@ -32,7 +32,7 @@ import nsdict
 import solon
 
 # Internal debugging / tracing
-LOG = True
+LOG = False
 if LOG:
 	import pdb
 	import traceback
@@ -42,7 +42,7 @@ def log(*args, **kwargs):
 			sys.stderr.write(str(arg))
 		sys.stderr.write("\n")
 
-solon.LOG=True
+solon.LOG=False
 #####################################################
 
 def readfile(filename):
@@ -200,7 +200,7 @@ class Rezyn:
 								print "css file [%s] is not under git control" % fullsourcepath
 							else:
 								print "css file [%s] has local modifications" % fullsourcepath
-							sys.exit(0)
+							sys.exit(-1)
 						key = subprocess.check_output(["git", "log", "-n", "1", "--pretty=format:%H", "--", fullsourcepath])
 						log("found key [%s]" % key)
 						if len(key) == 0:
@@ -233,6 +233,13 @@ class Rezyn:
 				elif ext.lower() == ".js":
 					minjs = slimit.minify(readfile(filename))
 					writefile(filename, minjs)
+
+	def writeoutput(self):
+		for filename, content in self.solon.context.output.dict().iteritems():
+			path = os.path.join(self.solon.context['config/tgtdir'], self.solon.context['config/tgtsubdir'], filename)
+			log("writing [%s]..." % path)
+			writefile(path, content)
+
 
 	def setup(self):
 
@@ -292,11 +299,9 @@ class Rezyn:
 		self.solon.rendertemplate("template/sitemap.txt")
 		self.solon.rendertemplate("template/robots.txt")
 
-		for filename, content in self.solon.context.output.dict().iteritems():
-			path = os.path.join(self.solon.context['config/tgtdir'], self.solon.context['config/tgtsubdir'], filename)
-			log("writing [%s]..." % path)
-			writefile(path, content)
+		# write the output content to their corresponding output files
 
+		self.writeoutput()
 
 class BaseException(Exception):
 	def __init__(self, message):

@@ -1,3 +1,8 @@
+%----------------------------------------------------------------------
+%- This is the main page template
+%- All pages on the site will wrap this around them
+%----------------------------------------------------------------------
+
 %func page: title subtitle base_path
 <!DOCTYPE html>
 <html>

@@ -1,3 +1,6 @@
+%----------------------------------------------------------------------
+%- Functions for the RSS feeds
+%----------------------------------------------------------------------
 
 %func item: path post
 	%set 'postlink': config/site_url config/tgtsubdir path post/slug '.html' + //+
