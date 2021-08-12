@@ -4,8 +4,6 @@
 
 %output 'sitemap.txt'
 	%for key: output None paths
-		%if key '.html' endswith
 {{ config/site_url config/tgtsubdir key //+ }}
-		%end
 	%end
 %end
