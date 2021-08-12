@@ -75,11 +75,11 @@ class Solon:
 		"""
 		self.context[name] = self.parser.parsetext(name, text)
 
-	def rendertemplate(self, name):
+	def rendertemplate(self, name, keepWhitespace=False, keepComments=False):
 		"""This is the main entry point to rendering a named template
 		The template node is found in the environment using the given name as reference.
 		"""
-		return self.renderer.rendernode(self.context[name])
+		return self.renderer.rendernode(self.context[name], keepWhitespace, keepComments)
 
 
 #######################################################################
@@ -248,17 +248,16 @@ class Parser:
 		Once a command starts, the rest of the line will be part of the command, until a comment
 		starts, after which the rest of the line is part of the comment.
 		"""
-		text = ""
-		command = ""
-		comment = ""
+		text = None
+		command = None
+		comment = None
 
 		items = [item for item in re.split("(" + self.DELIMITER + ")", line) if item]
 		#print "\t::", items
 		if len(items) > 0:
-			# if the line is not split, then there are no %s, which means
-			# it is all text
+			# if the line is not split, then there are no %s, which means it is all text
 			if len(items) == 1:
-				text = line
+				text = line.rstrip()
 			else:
 				commentstart = None
 				commandstart = None
@@ -287,8 +286,12 @@ class Parser:
 				if commandstart is not None:
 					items, command = items[:commandstart], "".join(items[commandstart:])
 					command = command.replace(self.DELIMITER*2, self.DELIMITER).rstrip()
-				text = "".join(items)
-				text = text.replace(self.DELIMITER*2, self.DELIMITER).rstrip()
+				string = "".join(items)
+				string = string.replace(self.DELIMITER*2, self.DELIMITER).rstrip()
+				if len(string) > 0:
+					text = string
+		else:
+			text = "" # empty string
 				
 		return text, command, comment
 
@@ -302,7 +305,6 @@ class Parser:
 		current = root
 		for linenr_, line in enumerate(text.split("\n")):
 
-			line = line.rstrip()
 			linenr = linenr_ + 1 # we naturally count lines starting at 1
 
 			text, command, comment = self.parseline(line)
@@ -312,7 +314,7 @@ class Parser:
 
 			log("line [%s] => [%s] [%s] [%s]" % (line, text, command, comment))
 
-			if len(text) > 0:
+			if text is not None:
 				log("\tline [%s] matches 'text'" % text)
 				if current.name == "text":
 					# simply append the line to the current statemnt
@@ -320,7 +322,7 @@ class Parser:
 				else:
 					current.append("text", text, name, linenr)
 
-			if len(command) > 0:
+			if command is not None:
 				if self.import_re.match(command):
 					log("\tline [%s] matches 'import'" % command)
 					n = current.append("import", command, name, linenr)
@@ -426,7 +428,7 @@ class Parser:
 				else:
 					raise SyntaxError("could not parse command [%s]" % command)
 
-			if len(comment) > 0:
+			if comment is not None:
 				log("\tline [%s] matches 'comment'" % command)
 				current.append("comment", comment, name, linenr)
 
@@ -468,7 +470,7 @@ class Parser:
 					raise SyntaxError("missing }} on %s@%i" % (n.path(), n.linenr()))
 				n.expr.append(self.tokenizer.tokenize(n.line[startexpr+2:endexpr]))
 				starttext = endexpr+2
-			log("expr is ", n.expr)
+			log("converted text [%s] to items" % n.line, n.expr)
 		else:
 			# post process any children nodes:
 			for child in node.children:
@@ -480,11 +482,14 @@ class Renderer:
 		self.context = context
 		self.evaluator = evaluator
 
-	def rendernode(self, node):
+	def rendernode(self, node, keepWhitespace=False, keepComments=False):
 		"""This is the main entry point to rendering a template node
 
 		It calls rendernode_, which recurses down the tree of nodes.
 		"""
+		self.keepWhitespace = keepWhitespace
+		self.keepComments = keepComments
+
 		assert(len(self.context.vars) == 1)
 		if "output" not in self.context:
 			self.context["output"] = NSDict()
@@ -614,15 +619,15 @@ class Renderer:
 					if len(n.expr) > 0:
 						out = [str(self.evaluatetokens(expr)) for expr in n.expr]
 						text = "".join(out)
-						if len(text.strip()) > 0:
+						if len(text.strip()) > 0 or self.keepWhitespace:
 							result.append(text)
 
 				elif n.name == "comment":
 					llog("resolving comment [%s]" % n.line)
 					# TODO the following should probably not be in the environment, but a constructor argument
 					#showcomments = 'config/showcomments' in self and self['config/showcomments']
-					#if showcomments:
-					#	result.append("<!-- " + n.line + " -->")
+					if self.keepComments:
+						result.append("<!-- " + n.line + " -->")
 
 				# calls rendernode
 				# appends output
@@ -828,8 +833,6 @@ class Context:
 			self.vars.append(NSDict())
 		else:
 			self.vars.append(NSDict(vars))
-		# a place for the output to go
-		self.vars[-1]['output'] = NSDict()
 		return self
 
 	def pop(self, result):
@@ -838,7 +841,10 @@ class Context:
 		"""
 		assert(len(self.vars) > 1)
 		vars = self.vars.pop()
-		self.vars[-1]["output"].update(vars["output"])
+		if "output" in vars:
+			if "output" not in self.vars[-1]:
+				self.vars[-1]["output"] = NSDict()
+			self.vars[-1]["output"].update(vars["output"])
 		self['__output__'] = result
 		return vars
 
