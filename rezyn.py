@@ -12,6 +12,7 @@ import math
 import getopt
 import subprocess
 import random
+import errno    
 
 # requirements
 import datetime
@@ -52,6 +53,15 @@ def readfile(filename):
 def writefile(filename, contents):
 	with open(filename, "w") as f:
 		f.write(contents)
+
+def mkdir(path):
+    try:
+        os.makedirs(path)
+    except OSError as exc:
+        if exc.errno == errno.EEXIST and os.path.isdir(path):
+            pass
+        else:
+            raise
 
 def parsedate(date_str):
 	d = dateutil.parser.parse(date_str)
@@ -237,6 +247,8 @@ class Rezyn:
 	def writeoutput(self):
 		for filename, content in self.solon.context.output.dict().iteritems():
 			path = os.path.join(self.solon.context['config/tgtdir'], self.solon.context['config/tgtsubdir'], filename)
+			dirpath, filepath = os.path.split(path)
+			mkdir(dirpath)
 			log("writing [%s]..." % path)
 			writefile(path, content)
 
@@ -294,10 +306,10 @@ class Rezyn:
 
 		# render the templates
 
-		self.solon.rendertemplate("template/rss.tpl")
 		self.solon.rendertemplate("template/site.tpl")
 		self.solon.rendertemplate("template/sitemap.txt")
-		self.solon.rendertemplate("template/robots.txt")
+		self.solon.rendertemplate("template/robots.txt", keepWhitespace=True)
+		self.solon.rendertemplate("template/rss.tpl")
 
 		# write the output content to their corresponding output files
 
