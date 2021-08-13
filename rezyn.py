@@ -33,7 +33,7 @@ import nsdict
 import solon
 
 # Internal debugging / tracing
-LOG = False
+LOG = True
 if LOG:
 	import pdb
 	import traceback
@@ -67,18 +67,29 @@ def parsedate(date_str):
 	d = dateutil.parser.parse(date_str)
 	return d.strftime('%Y/%m/%d %H:%M:%S')
 
-def separateheader(text):
-	# If there is a YAML header the protocol is to separate it from the main body
-	# content using a single "---" line.
-	spec = r'^---\s*\n(.*)^---\s*\n(.*)'
-	# re needs to match newlines and be multi-line aware
-	flags = re.DOTALL | re.M
-	m = re.match(spec, text, flags)
-	if not m:
-		# no match, return the whole text as the body
-		return "", text
-	fileheader, filebody = m.groups()
-	return fileheader, filebody
+def splitlines(linelist, separator):
+	# splits a list of lines into sublists, separated by the given separator
+	indices = (i for i, value in enumerate(linelist) if value.startswith(separator))
+	a = 0
+	for i in indices:
+		yield linelist[a:i]
+		a = i+1
+	yield linelist[a:]
+
+def splitcontent(content, separator):
+	# splits a piece of text into chunks separated by lines starting with the separator
+	lines = content.split("\n")
+	for chunks in splitlines(lines, separator):
+		yield "\n".join(chunks)
+
+def splitheader(content):
+	parts = list(splitcontent(content, '---'))
+	# a file with a valid yaml header should have multiple parts, and the length of the 
+	# first part will be zero (ie. the first line will be '---')
+	if len(parts) > 2 and len(parts[0]) == 0:
+		return parts[1], "---".join(parts[2:])
+	else:
+		return "", "---".join(parts)
 
 #####################################################
 
@@ -122,7 +133,7 @@ class Rezyn:
 		filecontent = unicode(readfile(filename), encoding='utf-8')
 
 		# split the yaml frontmatter and body text
-		fileheader, filebody = separateheader(filecontent)
+		fileheader, filebody = splitheader(filecontent)
 		fm = yaml.safe_load(fileheader)
 		if fm is not None:
 			# it is not an error if no yaml is present, the file simply has no metadata
@@ -215,8 +226,9 @@ class Rezyn:
 						log("found key [%s]" % key)
 						if len(key) == 0:
 							print "css file [%s] has no git checksum" % fullsourcepath
-							sys.exit(0)
-						assert(len(key) == 40) # check that we actually have a commit hash TODO: this needs to be more thorough.
+							sys.exit(-1)
+						assert(len(key) == 40)
+						assert(all(k in "0123456789abcdef" for k in key)) # check that this looks like a hex hash
 						key = key[:16]
 					log("key is [%s]" % key)
 					# add the key as csskeys.basename for each file, so that the page.html can find it.
