@@ -298,7 +298,7 @@ class Rezyn:
 		# copy everything from static to the target directory
 		log("copy sourcedir [%s] to targetdir [%s]" % (staticdir, targetdir))
 		shutil.copytree(staticdir, targetdir)
-		if "config/debug" not in self.solon.context or self.solon.context["config/debug"]:
+		if not ("config/debug" in self.solon.context and self.solon.context["config/debug"]):
 			# web minify (css and js)
 			log("minify web in targtdir [%s]" % targetdir)
 			self.minifydir(targetdir)
