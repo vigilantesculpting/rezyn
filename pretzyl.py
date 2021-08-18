@@ -296,6 +296,9 @@ def groupby(a, groupsize):
 	"""
 	return (a[i:i + groupsize] for i in range(0, len(a), groupsize))
 
+def sortpaths(pathlist):
+	return sorted(pathlist, key=lambda path: os.path.split(path))
+
 def methodcaller(name):
 	"""Invokes the named method on an object, using the arguments provided
 	"""
@@ -367,6 +370,7 @@ DefaultOperators = {
 	'pathsum' 		: MakeOperator(lambda a: os.path.join(*a), argc=None),
 	'sum' 			: MakeOperator(_sum, argc=None),
 	'strsum' 		: MakeOperator(strsum, argc=None),
+	'sortpaths' 	: MakeOperator(sortpaths, argc=None),
 
 	'truncate'		: MakeOperator(truncate, argc=1),
 
@@ -428,9 +432,9 @@ class Pretzyl:
 	with which operators can interact using the stack.
 	"""
 
-	STACKLIMIT = 256
-	STACKDEPTH = 10
-	INFLIMIT = 256 # set to float('Inf') for no limit
+	STACKLIMIT = sys.maxsize
+	STACKDEPTH = 100
+	INFLIMIT = 2**10 # set to float('Inf') for no limit
 
 	def __init__(self, environment = {}, operators = DefaultOperators, operatorpath = None, macros = MacroSymbols):
 		self.env = environment
