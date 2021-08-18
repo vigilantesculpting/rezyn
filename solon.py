@@ -41,23 +41,28 @@ import re
 import os
 
 import pretzyl
-from nsdict import NSDict
+import nsdict
 
 # internal debugging
 LOG = False
-if LOG:
-	import pdb
-	import traceback
 def log(*args, **kwargs):
 	if LOG:
 		for arg in args:
 			sys.stderr.write(str(arg))
 		sys.stderr.write("\n")
 
+def setlog(level):
+	if level > 0:
+		global LOG
+		LOG = True
+	pretzyl.setlog(level - 1)
+	nsdict.setlog(level - 1)
+
 
 #######################################################################
 #
-## Solon
+# Solon
+#
 
 class Solon:
 	"""The main Solon interface class.
@@ -84,7 +89,8 @@ class Solon:
 
 #######################################################################
 #
-## Solon
+# Node tree
+#
 
 class Node:
 	"""This class implements a node of execution.
@@ -141,14 +147,19 @@ class Node:
 		return self.parent
 
 
+
+#######################################################################
+#
+# Parser
+#
+
+
+
 class Parser:
 
 	def __init__(self, context, tokenizer):
 		self.context = context
 		self.tokenizer = tokenizer
-
-	###################################################################
-	### Parsing code
 
 	# single line node directives
 	comment_re 	= re.compile(r"\%#.*$")
@@ -476,6 +487,15 @@ class Parser:
 			for child in node.children:
 				self.processtext(child)
 
+
+
+#######################################################################
+#
+# Renderer
+#
+
+
+
 class Renderer:
 
 	def __init__(self, context, evaluator):
@@ -492,7 +512,7 @@ class Renderer:
 
 		assert(len(self.context.vars) == 1)
 		if "output" not in self.context:
-			self.context["output"] = NSDict()
+			self.context["output"] = nsdict.NSDict()
 		try:
 			callstack = []
 			result = self.rendernode_(node, callstack)
@@ -824,15 +844,15 @@ class Context:
 	"""
 
 	def __init__(self, initialenv):
-		self.vars = [NSDict(initialenv)]
+		self.vars = [nsdict.NSDict(initialenv)]
 
 	def push(self, vars = {}):
 		"""Adds a new NSDict to the top of the self.vars stack.
 		"""
-		if vars is None:
-			self.vars.append(NSDict())
-		else:
-			self.vars.append(NSDict(vars))
+		env = nsdict.NSDict()
+		if vars is not None:
+			env.update(vars)
+		self.vars.append(env)
 		return self
 
 	def pop(self, result):
@@ -843,7 +863,7 @@ class Context:
 		vars = self.vars.pop()
 		if "output" in vars:
 			if "output" not in self.vars[-1]:
-				self.vars[-1]["output"] = NSDict()
+				self.vars[-1]["output"] = nsdict.NSDict()
 			self.vars[-1]["output"].update(vars["output"])
 		self['__output__'] = result
 		return vars
@@ -914,6 +934,11 @@ class Context:
 				return True
 		return False
 
+
+#######################################################################
+#
+# Exceptions
+#
 
 class BaseException(Exception):
 	"""Base exception class for this module
@@ -1005,4 +1030,85 @@ class HaltCommand(CommandException):
 	def __init__(self, result, message):
 		CommandException.__init__(self, result, message)
 
+
+
+#######################################################################
+#
+# Command line usage
+#
+
+def parseargs(argv):
+	"""Parses command line arguments
+
+	All option arguments (starting with a dash '-') are interpreted as environment variables
+	to be fed to the renderer. The leading dash is stripped, and the environment variable
+	is set to the value following the equal sign '='.
+
+	If no equal sign is present, the varaiable is set to 'True'.
+	
+	Any bare arguments are interpreted as filenames, and added to a list.
+	
+	Example:
+
+		The arguments
+			['-name=Jack', 'test.tpl']
+
+		will set the environment to 
+			{'name': 'Jack'}
+
+		and return the list of files as
+			['test.tpl']
+	"""
+
+	filenames = []
+	env = {}
+	for arg in argv[1:]:
+		# bare arguments are filenames
+		if arg.startswith("-"):
+			optionarg = arg[1:]
+			# option arguments are variables
+			keyvalue = optionarg.split("=", 1)
+			if len(keyvalue) == 1:
+				env[optionarg] = True
+			else:
+				key, value = keyvalue
+				env[key] = value
+		else:
+			filenames.append(arg)
+	return filenames, env
+
+def main(argv):
+	"""Runs solon on a given environment and template file(s)
+
+	The environment and filenames are extracted from the argument list.
+	If there are no provided filenames, the template data is read from stdin.
+
+	Each template is read and parsed in turn, and once all templates have been
+	read they are rendered in turn.
+	"""
+
+	# grab the filenames and environment from the arguments
+	filenames, env = parseargs(argv)
+
+	# create a solon instance and feed it the environment
+	s = Solon(env)
+
+	# open all files for reading
+	if len(filenames) == 0:
+		# if no filenames were provided, read from stdin
+		files = [("<stdin>", sys.stdin)]
+	else:
+		files = [(filename, open(filename, "r")) for filename in filenames]
+
+	# parse each template in turn
+	for filename, file in files:
+		s.addtemplate(filename, file.read())
+
+	# render each template in turn
+	for filename, file in files:
+		print s.rendertemplate(filename)
+
+if __name__ == "__main__":
+	# by default, run the main function on the commandline arguments
+	main(sys.argv)
 

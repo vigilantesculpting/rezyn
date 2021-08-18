@@ -19,6 +19,12 @@ def log(*args, **kwargs):
 			sys.stderr.write(str(arg))
 		sys.stderr.write("\n")
 
+def setlog(level):
+	if level > 0:
+		global LOG
+		LOG = True
+	tokenyze.setlog(level - 1)
+	
 
 #######################################################################
 # Utilities

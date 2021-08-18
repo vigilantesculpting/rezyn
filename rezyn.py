@@ -33,7 +33,7 @@ import nsdict
 import solon
 
 # Internal debugging / tracing
-LOG = True
+LOG = False
 if LOG:
 	import pdb
 	import traceback
@@ -45,6 +45,12 @@ def log(*args, **kwargs):
 
 solon.LOG=False
 #####################################################
+
+def setlog(level):
+	if level > 0:
+		global LOG
+		LOG = True
+	solon.setlog(level - 1)
 
 def readfile(filename):
 	with open(filename, "r") as f:
@@ -251,9 +257,11 @@ class Rezyn:
 				filename = os.path.join(dirName, fileName)
 				if ext.lower() == ".css":
 					mincss = minifycss.minify(readfile(filename))
+					log("minifying css [%s]" % filename)
 					writefile(filename, mincss)
 				elif ext.lower() == ".js":
 					minjs = slimit.minify(readfile(filename))
+					log("minifying js [%s]" % filename)
 					writefile(filename, minjs)
 
 	def writeoutput(self):
@@ -290,7 +298,7 @@ class Rezyn:
 		# copy everything from static to the target directory
 		log("copy sourcedir [%s] to targetdir [%s]" % (staticdir, targetdir))
 		shutil.copytree(staticdir, targetdir)
-		if "config/minify" in self.solon.context and self.solon.context["config/minify"]:
+		if "config/debug" not in self.solon.context or self.solon.context["config/debug"]:
 			# web minify (css and js)
 			log("minify web in targtdir [%s]" % targetdir)
 			self.minifydir(targetdir)
@@ -302,6 +310,8 @@ class Rezyn:
 		self.solon.context['csskeys'] = csskeys
 
 	def process(self):
+
+		setlog(self.solon.context['config/verbose'])
 
 		self.setup()
 
@@ -327,6 +337,7 @@ class Rezyn:
 
 		self.writeoutput()
 
+
 class BaseException(Exception):
 	def __init__(self, message):
 		self.message = message
@@ -339,23 +350,7 @@ class NoConversion(BaseException):
 		BaseException.__init__(self, message)
 
 
-def usage(self, exitcode, program, message):
-	print """\
-Usage: %s [-d|--debug] [--config=<CONF>] [--targetdir=<DIR>] [--publish-all] [--help]
-Where:
-	--debug specifies the site should be built to debug
-	--config=<CONFIG> specifies where to find the CONFIG file
-	--targetdir=<DIR> specifies the output to go to the subdirectory DIR. This directory
-		will be deleted & recreated during the running of the program!
-		This defaults to "_http"
-	--publish-all will publish all content, even if marked 'nopublish'
-	--help prints this help and exits
-""" % program
-	sys.exit(exitcode)
-
 def processargs(argv):
-
-	filelist = []
 
 	configname = 'config.yml'
 	tgtdir = "_http"
@@ -364,9 +359,10 @@ def processargs(argv):
 	publish_all = False
 	debug = False
 	srcdir = None
+	verbose = 0
 
 	try:
-		optlist, args = getopt.gnu_getopt(argv[1:], 's:dc:T:t:ph', ['sourcedir=', 'debug', 'config=', 'targetdir=', 'targetsubdir=', 'publish-all', 'help'])
+		optlist, args = getopt.gnu_getopt(argv[1:], 's:dc:T:t:pvh', ['sourcedir=', 'debug', 'config=', 'targetdir=', 'targetsubdir=', 'publish-all', 'verbose', 'help'])
 	except getopt.GetoptError as err:
 		usage(-2, argv[0], err)
 	for opt, arg in optlist:
@@ -384,6 +380,8 @@ def processargs(argv):
 			usage(0, argv[0], '')
 		elif opt in ('-d', '--debug'):
 			debug = True
+		elif opt in ('-v', '--verbose'):
+			verbose += 1
 		else:
 			usage(-1, argv[0], "unknown argument [%s]" % opt)
 	if len(args) > 0:
@@ -400,6 +398,7 @@ def processargs(argv):
 		'base_path'						: '',
 		'publish_all'					: publish_all,
 		'debug'							: debug,
+		'verbose' 						: verbose,
 	})
 
 	if tgtsubdir:
@@ -410,17 +409,33 @@ def processargs(argv):
 	
 	return config
 
-if __name__=="__main__":
-	import pdb
-	import traceback
-	try:
-		config = processargs(sys.argv)
+def usage(exitcode, program, message):
 
-		rezyn = Rezyn(config)
-		rezyn.process()
-	except:
-		traceback.print_exc()
-		pdb.post_mortem()
+	# add a --verbose option, think about logging different aspects of the situation
+	# remove all mention of traceback and pdb, we can do this with python -m pdb
+	# at some point, think about breaking up the actions (removing the source tree, copying the static files, making a render list, etc.)
+
+	print """\
+Usage: %s [-d|--debug] [-c|--config=<CONF>] [-t|--targetsubdir=<DIR>] [-T|--targetdir=<DIR>] [-p|--publish-all] [-v|--verbose] [--help]
+Where:
+	--debug specifies the site should be built to debug
+	--config=<CONFIG> specifies where to find the CONFIG file
+	--targetdir=<DIR> specifies the output to go to the subdirectory DIR. This directory
+		will be deleted & recreated during the running of the program!
+		This defaults to "_http"
+	--publish-all will publish all content, even if marked 'nopublish'
+	--verbose increases the verbosity of the output
+		If specified more than once, all library calls will be made verbose
+	--help prints this help and exits
+""" % program
+	sys.exit(exitcode)
+
+
+if __name__=="__main__":
+	config = processargs(sys.argv)
+
+	rezyn = Rezyn(config)
+	rezyn.process()
 
 
 

@@ -50,8 +50,12 @@ Usage:
 """
 
 LOG = False
-if LOG:
-	import sys
+import sys
+
+def setlog(level):
+	if level > 0:
+		global LOG
+		LOG = True
 
 def log(*args, **kwargs):
 	"""For internal debug use
